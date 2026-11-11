@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ART Dependency Dashboard</title>
+<style>
+:root{--bg:#ffffff;--fg:#1d1d1f;--mut:#6b6b70;--line:#dcdce0;--card:#f6f6f8;--g:#1f9d55;--a:#e0a100;--r:#d64545;--acc:#3b6fd6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#17171a;--fg:#ececf1;--mut:#9a9aa3;--line:#33333a;--card:#202025;--g:#3fbf73;--a:#f0b429;--r:#ef6b6b;--acc:#7aa2f7}}
+:root[data-theme="dark"]{--bg:#17171a;--fg:#ececf1;--mut:#9a9aa3;--line:#33333a;--card:#202025;--g:#3fbf73;--a:#f0b429;--r:#ef6b6b;--acc:#7aa2f7}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 2px}
+.sub{color:var(--mut);font-size:12.5px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 4px}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:6px 12px;border-radius:8px;cursor:pointer}
+button.on{border-color:var(--acc);color:var(--acc);font-weight:600}
+button.small{padding:3px 8px;font-size:12px}
+.chip{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;color:#fff;white-space:nowrap}
+.g{background:var(--g)} .a{background:var(--a);color:#111} .r{background:var(--r)} .n{background:var(--line);color:var(--fg)}
+table{border-collapse:collapse;width:100%}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:middle;font-size:13px}
+th{color:var(--mut);font-weight:600;font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;overflow-x:auto}
+select,input{font:inherit;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+input[type=number]{width:64px}
+input[type=text]{min-width:200px}
+.note{font-size:12px;color:var(--mut);margin-top:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.src{font-size:10px;border:1px solid var(--line);border-radius:4px;padding:0 4px;color:var(--mut);margin-left:4px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 1px}
+.sc{display:inline-block;min-width:44px;text-align:center;padding:2px 0;border-radius:4px;font-size:11px;background:var(--line)}
+.cellbtn{cursor:pointer;text-align:center;min-width:72px}
+.cellbtn:hover{background:var(--line)}
+.legend span{margin-right:12px}
+h2{font-size:15px;margin:14px 0 4px}
+@media (max-width:640px){.wrap{padding:12px}th,td{font-size:12px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const TEAMS=[
+ {id:'pay',name:'Payments',src:'Jira'},
+ {id:'chk',name:'Checkout',src:'Jira'},
+ {id:'cat',name:'Catalogue',src:'Jira'},
+ {id:'srch',name:'Search',src:'Jira'},
+ {id:'mob',name:'Mobile',src:'ADO'},
+ {id:'plat',name:'Platform',src:'Jira'}
+];
+const T=Object.fromEntries(TEAMS.map(t=>[t.id,t]));
+const SPRINTS=['S1','S2','S3','S4','S5'];
+const CAP={pay:[40,40,40,40,40],chk:[36,36,36,36,36],cat:[30,30,30,30,30],srch:[24,24,24,24,24],mob:[32,32,32,32,32],plat:[28,28,28,28,28]};
+const PLAN={pay:[38,42,36,44,30],chk:[30,34,40,38,20],cat:[28,26,24,22,18],srch:[20,22,26,27,12],mob:[30,30,33,28,15],plat:[18,20,22,25,10]};
+let deps=[
+ {id:'D1',from:'chk',to:'pay',item:'Payment API v2 for checkout',need:1,status:'committed',commit:1,age:0},
+ {id:'D2',from:'chk',to:'cat',item:'Live price feed',need:0,status:'committed',commit:2,age:0},
+ {id:'D3',from:'srch',to:'cat',item:'Catalogue index schema',need:2,status:'pending',commit:null,age:7},
+ {id:'D4',from:'mob',to:'pay',item:'Wallet endpoint (ADO item)',need:1,status:'committed',commit:1,age:0},
+ {id:'D5',from:'plat',to:'chk',item:'Auth token change',need:3,status:'committed',commit:2,age:0},
+ {id:'D6',from:'pay',to:'plat',item:'Key rotation',need:2,status:'rejected',commit:null,age:0},
+ {id:'D7',from:'cat',to:'srch',item:'Ranking API',need:3,status:'committed',commit:3,age:0},
+ {id:'D8',from:'srch',to:'plat',item:'Logging pipeline',need:4,status:'committed',commit:3,age:0},
+ {id:'D9',from:'mob',to:'cat',item:'Product image service',need:1,status:'committed',commit:0,age:0},
+ {id:'D10',from:'cat',to:'chk',item:'Cart event feed',need:1,status:'committed',commit:1,age:0},
+ {id:'D11',from:'pay',to:'mob',item:'Refund status events',need:3,status:'pending',commit:null,age:2}
+];
+let people=[
+ {name:'Ana',role:'QA',alloc:{pay:50,chk:50}},
+ {name:'Ben',role:'UX',alloc:{cat:60,srch:50}},
+ {name:'Chloe',role:'Data',alloc:{srch:50,plat:50}},
+ {name:'Dev',role:'Mobile lead',alloc:{mob:100}},
+ {name:'Eli',role:'Architect',alloc:{pay:30,plat:30,chk:40}}
+];
+let tab='dep', pair=null, nextId=12;
+
+function risk(d){
+ if(d.status==='rejected') return 'r';
+ if(d.status==='pending') return d.age>5?'r':'a';
+ if(d.commit>d.need) return 'r';
+ if(d.commit===d.need) return 'a';
+ return 'g';
+}
+const RL={r:'Red',a:'Amber',g:'Green'};
+function reason(d){
+ if(d.status==='rejected') return 'Rejected by the providing team';
+ if(d.status==='pending') return d.age>5?'Unanswered for '+d.age+' days':'Waiting for an answer ('+d.age+' days)';
+ if(d.commit>d.need) return 'Committed after the needed-by sprint';
+ if(d.commit===d.need) return 'Committed in the needed-by sprint';
+ return 'Committed before the needed-by sprint';
+}
+function hasPath(a,b){
+ const seen=new Set([a]),q=[a];
+ while(q.length){const u=q.shift(); if(u===b) return true;
+  deps.forEach(d=>{ if(d.status!=='rejected'&&d.from===u&&!seen.has(d.to)){seen.add(d.to);q.push(d.to);} }); }
+ return false;
+}
+function cycles(){ return new Set(deps.filter(d=>d.status!=='rejected'&&hasPath(d.to,d.from)).map(d=>d.id)); }
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const chip=r=>`<span class="chip ${r}">${RL[r]}</span>`;
+const sp=i=>SPRINTS[i]??'';
+
+function setTab(t){tab=t;pair=null;render();}
+function showPair(f,t){pair={from:f,to:t};render();}
+function clearPair(){pair=null;render();}
+function accept(id){const d=deps.find(x=>x.id===id);d.status='committed';d.commit=+document.getElementById('sp-'+id).value;render();}
+function reject(id){const d=deps.find(x=>x.id===id);d.status='rejected';render();}
+function ageUp(id){const d=deps.find(x=>x.id===id);d.age++;render();}
+function addReq(){
+ const f=document.getElementById('nf').value,t=document.getElementById('nt').value,item=document.getElementById('ni').value.trim(),n=+document.getElementById('nn').value;
+ const msg=document.getElementById('msg');
+ if(f===t){msg.textContent='Pick two different teams.';return;}
+ if(!item){msg.textContent='Describe the item needed.';return;}
+ msg.textContent='';
+ deps.push({id:'D'+(nextId++),from:f,to:t,item,need:n,status:'pending',commit:null,age:0});
+ render();
+}
+function setAlloc(pi,team,v){people[pi].alloc[team]=Math.max(0,Math.min(200,+v||0));render();}
+
+function depView(){
+ const cyc=cycles();
+ const counts={r:0,a:0,g:0};
+ deps.forEach(d=>counts[risk(d)]++);
+ const list=deps.filter(d=>!pair||(d.from===pair.from&&d.to===pair.to));
+ let mat='<table><tr><th>Needs from → gives</th>'+TEAMS.map(t=>`<th>${t.name}</th>`).join('')+'</tr>';
+ TEAMS.forEach(f=>{
+  mat+=`<tr><td><b>${f.name}</b></td>`;
+  TEAMS.forEach(t=>{
+   if(f.id===t.id){mat+='<td style="color:var(--mut)">—</td>';return;}
+   const c=deps.filter(d=>d.from===f.id&&d.to===t.id);
+   if(!c.length){mat+='<td class="cellbtn"></td>';return;}
+   const dots=c.map(d=>`<span class="dot ${risk(d)}" title="${esc(d.item)}"></span>`).join('');
+   mat+=`<td class="cellbtn" onclick="showPair('${f.id}','${t.id}')">${dots}<div class="note">${c.length} item${c.length>1?'s':''}</div></td>`;
+  });
+  mat+='</tr>';
+ });
+ mat+='</table>';
+ let rows=list.map(d=>{
+  const timeline=SPRINTS.map((s,i)=>{
+   let lab='',bg='var(--line)',col='var(--fg)';
+   if(i===d.need){lab='need';}
+   if(d.status==='committed'&&i===d.commit){lab='commit';bg='var(--'+({r:'r',a:'a',g:'g'}[risk(d)])+')';col=risk(d)==='a'?'#111':'#fff';}
+   return `<span class="sc" style="background:${bg};color:${col}" title="${s}">${lab||s}</span>`;
+  }).join(' ');
+  let action='';
+  if(d.status==='pending'){
+   action=`<div class="row"><select id="sp-${d.id}">${SPRINTS.map((s,i)=>`<option value="${i}" ${i===d.need?'selected':''}>${s}</option>`).join('')}</select>
+   <button class="small" onclick="accept('${d.id}')">Accept</button><button class="small" onclick="reject('${d.id}')">Reject</button>
+   <button class="small" onclick="ageUp('${d.id}')" title="Demo only: add a day">+1 day</button></div>`;
+  } else action='<span class="note">—</span>';
+  const cy=cyc.has(d.id)?' <span class="chip n">Cycle</span>':'';
+  return `<tr><td>${d.id}</td><td>${esc(d.item)}<span class="src">${T[d.from].src}</span><div class="note">${T[d.from].name} needs from ${T[d.to].name}</div></td>
+  <td>${timeline}</td><td>${chip(risk(d))}${cy}<div class="note">${reason(d)}</div></td><td>${action}</td></tr>`;
+ }).join('');
+ if(!rows) rows='<tr><td colspan=5 class="note">No dependencies for this pair.</td></tr>';
+ return `
+ <div class="row"><span class="chip r">Red ${counts.r}</span><span class="chip a">Amber ${counts.a}</span><span class="chip g">Green ${counts.g}</span><span class="chip n">Cycles ${cyc.size}</span></div>
+ <h2>Dependency map by team (FR-1.3)</h2>
+ <div class="card">${mat}<div class="note">Each dot is one dependency, coloured by its risk. Click a cell to see its items below. Rows are the team that needs work, columns the team that delivers it.</div>
+ ${pair?`<div class="row" style="margin-top:8px"><button class="small" onclick="clearPair()">Show all</button><span class="note">Showing ${T[pair.from].name} needs from ${T[pair.to].name}</span></div>`:''}</div>
+ <h2>Dependencies and sprint timeline (FR-1.3, FR-1.4, FR-1.6)</h2>
+ <div class="card"><table><tr><th>ID</th><th>Item</th><th>Sprints S1 to S5</th><th>Risk</th><th>Decision</th></tr>${rows}</table>
+ <div class="note">"need" = needed-by sprint, "commit" = sprint the providing team committed to.</div></div>
+ <h2>Request a new dependency (FR-1.1)</h2>
+ <div class="card"><div class="row">
+  <select id="nf">${TEAMS.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</select> needs from
+  <select id="nt">${TEAMS.map((t,i)=>`<option value="${t.id}" ${i===1?'selected':''}>${t.name}</option>`).join('')}</select>
+  <input type="text" id="ni" placeholder="What is needed"> by
+  <select id="nn">${SPRINTS.map((s,i)=>`<option value="${i}">${s}</option>`).join('')}</select>
+  <button class="small" onclick="addReq()">Add request</button></div><div class="note" id="msg"></div></div>`;
+}
+
+function capView(){
+ const cell=(p,c)=>{const u=Math.round(p/c*100);let k='g';if(u>100)k='r';else if(u>85||u<60)k='a';return `<td style="text-align:center"><span class="chip ${k}">${u}%</span><div class="note">${p}/${c} pts</div></td>`;};
+ let h='<table><tr><th>Team</th>'+SPRINTS.map(s=>`<th style="text-align:center">${s}</th>`).join('')+'</tr>';
+ TEAMS.forEach(t=>{h+=`<tr><td><b>${t.name}</b></td>`+SPRINTS.map((s,i)=>cell(PLAN[t.id][i],CAP[t.id][i])).join('')+'</tr>';});
+ h+='<tr><td><b>ART total</b></td>'+SPRINTS.map((s,i)=>{const p=TEAMS.reduce((a,t)=>a+PLAN[t.id][i],0),c=TEAMS.reduce((a,t)=>a+CAP[t.id][i],0);return cell(p,c);}).join('')+'</tr></table>';
+ return `<h2>Team utilisation per sprint (FR-2.2 to FR-2.4)</h2>
+ <div class="card">${h}
+ <div class="legend note"><span><span class="chip g">60 to 85%</span> planned well</span><span><span class="chip a">85 to 100%, or under 60%</span> watch</span><span><span class="chip r">over 100%</span> overloaded</span></div></div>`;
+}
+
+function personView(){
+ let h='<table><tr><th>Person</th><th>Role</th>'+TEAMS.map(t=>`<th>${t.name}</th>`).join('')+'<th>Total</th></tr>';
+ people.forEach((p,pi)=>{
+  const tot=Object.values(p.alloc).reduce((a,b)=>a+b,0);
+  const k=tot>100?'r':'g';
+  h+=`<tr><td><b>${p.name}</b></td><td>${p.role}</td>`+TEAMS.map(t=>`<td><input type="number" min="0" max="200" value="${p.alloc[t.id]||0}" onchange="setAlloc(${pi},'${t.id}',this.value)">%</td>`).join('')+
+  `<td><span class="chip ${k}">${tot}%</span>${tot>100?'<div class="note">Over 100%: blocked until fixed</div>':''}</td></tr>`;
+ });
+ h+='</table>';
+ return `<h2>Shared people across teams (FR-2.5)</h2><div class="card">${h}
+ <div class="note">Allocations are the share of each person's time per team. A total over 100% is blocked. Sample data for the prototype.</div></div>`;
+}
+
+function render(){
+ const tabs=[['dep','Dependencies'],['cap','Capacity'],['ppl','People']];
+ document.getElementById('app').innerHTML=`
+ <h1>ART Dependency Dashboard</h1>
+ <div class="sub">Prototype with sample data · 6 teams in one ART · PI 1, sprints S1 to S5</div>
+ <nav>${tabs.map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="setTab('${k}')">${l}</button>`).join('')}</nav>
+ ${tab==='dep'?depView():tab==='cap'?capView():personView()}
+ <div class="card note"><b>Risk rules (FR-1.4):</b> Red if rejected, still pending after 5 days, or committed after the needed-by sprint. Amber if committed in the needed-by sprint, or pending for 5 days or fewer. Green if committed before the needed-by sprint. Cycles are two or more teams waiting on each other.</div>`;
+}
+render();
+</script>
+</body>
+</html>
