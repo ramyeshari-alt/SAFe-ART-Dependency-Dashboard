@@ -12,6 +12,7 @@ Teams in one ART depend on each other's work, but nobody sees the whole picture.
 
 1. **ART Dependency Dashboard.** A team matrix and sprint timeline that show who waits on whom, with each dependency rated Green, Amber or Red.
 2. **Capacity and Utilisation Planner.** A team-by-sprint heatmap that shows overload before the sprint starts, plus a person view across teams.
+3. **Ask the ART (AI assistant, first agentic step).** One click prepares the weekly ART sync: ranked risks, a calculated fix for each with before and after utilisation, and a draft nudge to the owning team. Code does the maths, Claude explains and writes, and the RTE approves every message. See `docs/ask-the-art.md`.
 
 ## What is in this repository
 
@@ -20,7 +21,8 @@ Teams in one ART depend on each other's work, but nobody sees the whole picture.
 | `presentation/` | The final slide deck, as PPTX and PDF |
 | `docs/requirements.md` | Functional requirements (FR-1.x, FR-2.x), edge cases and non-functional requirements (NFR-1 to NFR-6) |
 | `docs/tech-stack.md` | The Jira Cloud tech stack, grouped by layer, with sources |
-| `docs/flows/` | Build-logic flow diagrams for the dashboard, in three sections (A, B and C) |
+| `docs/flows/` | Build-logic flow diagrams: A, B and C for the dashboard, D for the AI assistant |
+| `docs/ask-the-art.md` | What the AI assistant does, its guardrails and limits |
 | `docs/demo-walkthrough.md` | A step-by-step guide for presenting the prototype |
 | `docs/images/prototype.png` | A screenshot of the prototype |
 | `prototype/dashboard.html` | A clickable prototype with sample data. Open it in any browser |
@@ -32,7 +34,7 @@ Teams in one ART depend on each other's work, but nobody sees the whole picture.
 
 ## Running the prototype
 
-Open `prototype/dashboard.html` in any modern browser. It needs no install and no network access.
+Open `prototype/dashboard.html` in any modern browser. It needs no install and no network access. Opened as a file, the Ask the ART tab runs in offline mode (rules and templates). In the live Claude artifact it can use Claude, after the viewer allows it.
 
 ## Scope and next steps
 
