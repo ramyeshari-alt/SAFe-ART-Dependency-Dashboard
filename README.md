@@ -1,6 +1,6 @@
 # SAFe ART Dependency and Capacity Dashboard for Jira Cloud
 
-A product case study. It shows how two features could help a SAFe Agile Release Train (ART) of five to six teams plan work across team boundaries, built as a Forge app inside Jira Cloud.
+A product case study. It shows how two features, plus an AI assistant, could help a SAFe Agile Release Train (ART) of five to six teams plan work across team boundaries, built as a Forge app inside Jira Cloud.
 
 **Live prototype:** https://claude.ai/artifact/FtacGUD3MnfamMsFHCiaNB
 
@@ -8,7 +8,7 @@ A product case study. It shows how two features could help a SAFe Agile Release 
 
 Teams in one ART depend on each other's work, but nobody sees the whole picture. Dependencies are tracked in ad hoc lists, and capacity is only checked once a sprint has already started. The result is late surprises and overloaded people.
 
-## Two features
+## Two features and an AI assistant
 
 1. **ART Dependency Dashboard.** A team matrix and sprint timeline that show who waits on whom, with each dependency rated Green, Amber or Red.
 2. **Capacity and Utilisation Planner.** A team-by-sprint heatmap that shows overload before the sprint starts, plus a person view across teams.
@@ -25,6 +25,7 @@ Teams in one ART depend on each other's work, but nobody sees the whole picture.
 | `docs/ask-the-art.md` | What the AI assistant does, its guardrails and limits |
 | `docs/demo-walkthrough.md` | A step-by-step guide for presenting the prototype |
 | `docs/images/prototype.png` | A screenshot of the prototype |
+| `docs/images/ask-the-art.png` | A screenshot of the Ask the ART tab |
 | `prototype/dashboard.html` | A clickable prototype with sample data. Open it in any browser |
 
 ## Key rules
