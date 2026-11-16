@@ -35,6 +35,24 @@ input[type=text]{min-width:200px}
 .cellbtn:hover{background:var(--line)}
 .legend span{margin-right:12px}
 h2{font-size:15px;margin:14px 0 4px}
+.mode{font-size:12px;border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--mut)}
+.mode.on{border-color:var(--acc);color:var(--acc)}
+button.cta{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600;padding:8px 16px}
+button:disabled{opacity:.6;cursor:default}
+.hl{font-size:15px;font-weight:600}
+.rk{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0}
+.rkh{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);font-size:12px;font-weight:700}
+.why{margin:6px 0 0}
+.facts{margin:6px 0;padding-left:18px;font-size:13px}
+.fix{border-left:3px solid var(--acc);padding:4px 0 4px 10px;margin:8px 0;font-size:13px}
+.imp{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:12px}
+details summary{cursor:pointer;font-size:13px;color:var(--acc);margin-top:4px}
+textarea{width:100%;font:inherit;font-size:13px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px;margin:6px 0}
+.chatlog{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:88%;padding:8px 10px;border-radius:10px;font-size:13px;border:1px solid var(--line);background:var(--bg)}
+.msg.user{align-self:flex-end;border-color:var(--acc)}
+a.tk{color:var(--acc);font-weight:600;text-decoration:none;border-bottom:1px dotted var(--acc)}
 @media (max-width:640px){.wrap{padding:12px}th,td{font-size:12px}}
 </style>
 </head>
@@ -54,17 +72,17 @@ const SPRINTS=['S1','S2','S3','S4','S5'];
 const CAP={pay:[40,40,40,40,40],chk:[36,36,36,36,36],cat:[30,30,30,30,30],srch:[24,24,24,24,24],mob:[32,32,32,32,32],plat:[28,28,28,28,28]};
 const PLAN={pay:[38,42,36,44,30],chk:[30,34,40,38,20],cat:[28,26,24,22,18],srch:[20,22,26,27,12],mob:[30,30,33,28,15],plat:[18,20,22,25,10]};
 let deps=[
- {id:'D1',from:'chk',to:'pay',item:'Payment API v2 for checkout',need:1,status:'committed',commit:1,age:0},
- {id:'D2',from:'chk',to:'cat',item:'Live price feed',need:0,status:'committed',commit:2,age:0},
- {id:'D3',from:'srch',to:'cat',item:'Catalogue index schema',need:2,status:'pending',commit:null,age:7},
- {id:'D4',from:'mob',to:'pay',item:'Wallet endpoint (ADO item)',need:1,status:'committed',commit:1,age:0},
- {id:'D5',from:'plat',to:'chk',item:'Auth token change',need:3,status:'committed',commit:2,age:0},
- {id:'D6',from:'pay',to:'plat',item:'Key rotation',need:2,status:'rejected',commit:null,age:0},
- {id:'D7',from:'cat',to:'srch',item:'Ranking API',need:3,status:'committed',commit:3,age:0},
- {id:'D8',from:'srch',to:'plat',item:'Logging pipeline',need:4,status:'committed',commit:3,age:0},
- {id:'D9',from:'mob',to:'cat',item:'Product image service',need:1,status:'committed',commit:0,age:0},
- {id:'D10',from:'cat',to:'chk',item:'Cart event feed',need:1,status:'committed',commit:1,age:0},
- {id:'D11',from:'pay',to:'mob',item:'Refund status events',need:3,status:'pending',commit:null,age:2}
+ {id:'D1',key:'CHK-112',pts:3,from:'chk',to:'pay',item:'Payment API v2 for checkout',need:1,status:'committed',commit:1,age:0},
+ {id:'D2',key:'CHK-118',pts:5,from:'chk',to:'cat',item:'Live price feed',need:0,status:'committed',commit:2,age:0},
+ {id:'D3',key:'SRCH-88',pts:3,from:'srch',to:'cat',item:'Catalogue index schema',need:2,status:'pending',commit:null,age:7},
+ {id:'D4',key:'ADO-4402',pts:3,from:'mob',to:'pay',item:'Wallet endpoint (ADO item)',need:1,status:'committed',commit:1,age:0},
+ {id:'D5',key:'PLAT-61',pts:2,from:'plat',to:'chk',item:'Auth token change',need:3,status:'committed',commit:2,age:0},
+ {id:'D6',key:'PAY-204',pts:5,from:'pay',to:'plat',item:'Key rotation',need:2,status:'rejected',commit:null,age:0},
+ {id:'D7',key:'CAT-140',pts:3,from:'cat',to:'srch',item:'Ranking API',need:3,status:'committed',commit:3,age:0},
+ {id:'D8',key:'SRCH-95',pts:3,from:'srch',to:'plat',item:'Logging pipeline',need:4,status:'committed',commit:3,age:0},
+ {id:'D9',key:'ADO-4410',pts:2,from:'mob',to:'cat',item:'Product image service',need:1,status:'committed',commit:0,age:0},
+ {id:'D10',key:'CAT-151',pts:3,from:'cat',to:'chk',item:'Cart event feed',need:1,status:'committed',commit:1,age:0},
+ {id:'D11',key:'PAY-219',pts:3,from:'pay',to:'mob',item:'Refund status events',need:3,status:'pending',commit:null,age:2}
 ];
 let people=[
  {name:'Ana',role:'QA',alloc:{pay:50,chk:50}},
@@ -113,7 +131,7 @@ function addReq(){
  if(f===t){msg.textContent='Pick two different teams.';return;}
  if(!item){msg.textContent='Describe the item needed.';return;}
  msg.textContent='';
- deps.push({id:'D'+(nextId++),from:f,to:t,item,need:n,status:'pending',commit:null,age:0});
+ deps.push({id:'D'+nextId,key:T[f].name.slice(0,3).toUpperCase()+'-'+(300+nextId++),pts:3,from:f,to:t,item,need:n,status:'pending',commit:null,age:0});
  render();
 }
 function setAlloc(pi,team,v){people[pi].alloc[team]=Math.max(0,Math.min(200,+v||0));render();}
@@ -150,7 +168,7 @@ function depView(){
    <button class="small" onclick="ageUp('${d.id}')" title="Demo only: add a day">+1 day</button></div>`;
   } else action='<span class="note">—</span>';
   const cy=cyc.has(d.id)?' <span class="chip n">Cycle</span>':'';
-  return `<tr><td>${d.id}</td><td>${esc(d.item)}<span class="src">${T[d.from].src}</span><div class="note">${T[d.from].name} needs from ${T[d.to].name}</div></td>
+  return `<tr><td>${d.key}</td><td>${esc(d.item)}<span class="src">${T[d.from].src}</span><div class="note">${T[d.from].name} needs from ${T[d.to].name}</div></td>
   <td>${timeline}</td><td>${chip(risk(d))}${cy}<div class="note">${reason(d)}</div></td><td>${action}</td></tr>`;
  }).join('');
  if(!rows) rows='<tr><td colspan=5 class="note">No dependencies for this pair.</td></tr>';
@@ -160,7 +178,7 @@ function depView(){
  <div class="card">${mat}<div class="note">Each dot is one dependency, coloured by its risk. Click a cell to see its items below. Rows are the team that needs work, columns the team that delivers it.</div>
  ${pair?`<div class="row" style="margin-top:8px"><button class="small" onclick="clearPair()">Show all</button><span class="note">Showing ${T[pair.from].name} needs from ${T[pair.to].name}</span></div>`:''}</div>
  <h2>Dependencies and sprint timeline (FR-1.3, FR-1.4, FR-1.6)</h2>
- <div class="card"><table><tr><th>ID</th><th>Item</th><th>Sprints S1 to S5</th><th>Risk</th><th>Decision</th></tr>${rows}</table>
+ <div class="card"><table><tr><th>Ticket</th><th>Item</th><th>Sprints S1 to S5</th><th>Risk</th><th>Decision</th></tr>${rows}</table>
  <div class="note">"need" = needed-by sprint, "commit" = sprint the providing team committed to.</div></div>
  <h2>Request a new dependency (FR-1.1)</h2>
  <div class="card"><div class="row">
@@ -194,13 +212,242 @@ function personView(){
  <div class="note">Allocations are the share of each person's time per team. A total over 100% is blocked. Sample data for the prototype.</div></div>`;
 }
 
+/* ================= Ask the ART: AI risk assistant =================
+   Split of work:
+   1. FACTS (plain code, below): risk colours, cycles, utilisation %, fix options.
+      The numbers always come from here.
+   2. AI (optional): ranks nothing and counts nothing. It only rewrites the
+      facts into a short briefing and friendlier nudge messages, and answers
+      questions using only the facts it is given. Any number in its answer that
+      is not in the facts is caught and the plain-code text is used instead.
+   3. HUMAN: reviews, edits and copies every draft. Nothing writes to Jira or ADO.
+*/
+const STORIES=[
+ {key:'PAY-231',team:'pay',sprint:1,pts:5,title:'Refund report export'},
+ {key:'PAY-236',team:'pay',sprint:1,pts:3,title:'Card BIN lookup cache'},
+ {key:'PAY-248',team:'pay',sprint:3,pts:8,title:'Fraud rule tuning'},
+ {key:'PAY-250',team:'pay',sprint:3,pts:3,title:'Settlement CSV fix'},
+ {key:'CHK-177',team:'chk',sprint:2,pts:5,title:'Guest checkout copy refresh'},
+ {key:'CHK-180',team:'chk',sprint:2,pts:8,title:'Address autocomplete'},
+ {key:'CHK-190',team:'chk',sprint:3,pts:3,title:'Promo code A/B test'},
+ {key:'SRCH-115',team:'srch',sprint:2,pts:3,title:'Facet filter polish'},
+ {key:'SRCH-120',team:'srch',sprint:3,pts:5,title:'Synonym tuning'},
+ {key:'ADO-4471',team:'mob',sprint:2,pts:3,title:'Dark mode polish'}
+];
+const pct=(p,c)=>Math.round(p/c*100);
+const band=u=>u>100?'r':(u>85||u<60)?'a':'g';
+const BANDTXT={r:'over 100%',a:'outside 60 to 85%',g:'in the 60 to 85% band'};
+
+/* ---------- 1. Facts engine (deterministic) ---------- */
+function bestSlot(team,pts,lastSprint){
+ // Earliest-safe sprint for a provider to take `pts` on or before `lastSprint`.
+ const opts=[];
+ for(let i=0;i<=lastSprint;i++){const b=pct(PLAN[team][i],CAP[team][i]),a=pct(PLAN[team][i]+pts,CAP[team][i]);opts.push({i,b,a});}
+ const greenEarly=opts.filter(o=>o.i<lastSprint&&o.a<=85);
+ if(greenEarly.length) return {...greenEarly[greenEarly.length-1],ok:'g'};
+ const atNeed=opts.find(o=>o.i===lastSprint&&o.a<=85);
+ if(atNeed) return {...atNeed,ok:'a'};
+ const best=opts.reduce((m,o)=>o.a<m.a?o:m,opts[0]);
+ return {...best,ok:best.a>100?'r':'a'};
+}
+function depFix(d){
+ const prov=T[d.to].name,s=bestSlot(d.to,d.pts,d.need);
+ const resRisk=s.i<d.need?'Green':'Amber';
+ if(s.a<=85) return {text:`Ask ${prov} to commit ${d.key} in ${sp(s.i)}. ${prov} goes from ${s.b}% to ${s.a}% in ${sp(s.i)}, and the dependency turns ${resRisk}.`,
+   impact:[{who:`${prov} ${sp(s.i)}`,b:s.b,a:s.a}],slot:s};
+ if(s.a<=100) return {text:`Tightest option: ${prov} commits ${d.key} in ${sp(s.i)}, which takes ${prov} from ${s.b}% to ${s.a}% (Amber). Pair it with freeing ${d.pts} points elsewhere in ${prov}'s ${sp(s.i)}.`,
+   impact:[{who:`${prov} ${sp(s.i)}`,b:s.b,a:s.a}],slot:s};
+ return {text:`${prov} has no room by ${sp(d.need)} (${s.i===d.need?'it':'even the best sprint, '+sp(s.i)+','} would hit ${s.a}%). Agree at the sync to move ${T[d.from].name}'s dependent work later, or to drop scope.`,
+   impact:[{who:`${prov} ${sp(s.i)}`,b:s.b,a:s.a}],slot:s};
+}
+function overloadFix(team,i){
+ const p=PLAN[team][i],c=CAP[team][i],excess=p-c;
+ const linked=deps.filter(d=>d.to===team&&d.status==='committed'&&d.commit===i);
+ const cand=STORIES.filter(s=>s.team===team&&s.sprint===i).sort((a,b)=>a.pts-b.pts);
+ const story=cand.find(s=>s.pts>=excess)||cand[cand.length-1];
+ if(!story) return {text:`Free ${excess} points from ${T[team].name}'s ${sp(i)} before the sprint starts.`,impact:[]};
+ const before=pct(p,c),after=pct(p-story.pts,c);
+ // Option A: defer inside the same team. Option B: hand to another team in the same sprint.
+ let target=null;
+ for(let j=i+1;j<SPRINTS.length;j++){const a=pct(PLAN[team][j]+story.pts,CAP[team][j]);if(a<=85){target={who:`${T[team].name} ${sp(j)}`,b:pct(PLAN[team][j],CAP[team][j]),a,how:`defer it to ${sp(j)}`};break;}}
+ if(!target){let best=null;TEAMS.forEach(t=>{if(t.id===team)return;const a=pct(PLAN[t.id][i]+story.pts,CAP[t.id][i]);if(a<=85&&(!best||a<best.a))best={who:`${t.name} ${sp(i)}`,b:pct(PLAN[t.id][i],CAP[t.id][i]),a,how:`hand it to ${t.name} in ${sp(i)} (check skills first)`};});target=best;}
+ const imp=[{who:`${T[team].name} ${sp(i)}`,b:before,a:after}];
+ let text=`Move ${story.key} "${story.title}" (${story.pts} pts) out of ${sp(i)}: ${T[team].name} drops from ${before}% to ${after}%.`;
+ if(target){text+=` Best place: ${target.how}, taking ${target.who} from ${target.b}% to ${target.a}%.`;imp.push({who:target.who,b:target.b,a:target.a});}
+ else text+=' No team has room under 85% in this PI, so this needs a scope talk.';
+ if(linked.length) text+=` Keep ${linked.map(d=>d.key).join(', ')} in place: other teams need ${linked.length>1?'them':'it'} in ${sp(i)}.`;
+ return {text,impact:imp,story:story.key};
+}
+function teamGroups(){
+ // Groups of teams that wait on each other in a loop (strongly connected teams).
+ const live=deps.filter(d=>d.status!=='rejected'),reach=(a)=>{const s=new Set([a]),q=[a];while(q.length){const u=q.shift();live.forEach(d=>{if(d.from===u&&!s.has(d.to)){s.add(d.to);q.push(d.to);}});}return s;};
+ const R=Object.fromEntries(TEAMS.map(t=>[t.id,reach(t.id)])),done=new Set(),groups=[];
+ TEAMS.forEach(t=>{if(done.has(t.id))return;const g=TEAMS.filter(u=>R[t.id].has(u.id)&&R[u.id].has(t.id)).map(u=>u.id);g.forEach(x=>done.add(x));if(g.length>1)groups.push(g);});
+ const pairs=[];TEAMS.forEach((a,i)=>TEAMS.slice(i+1).forEach(b=>{const ab=live.filter(d=>d.from===a.id&&d.to===b.id),ba=live.filter(d=>d.from===b.id&&d.to===a.id);if(ab.length&&ba.length)pairs.push({teams:[a.id,b.id],deps:[...ab,...ba]});}));
+ if(pairs.length) return pairs; // two teams waiting on each other: the loops people can act on
+ return groups.map(g=>({teams:g,deps:live.filter(d=>g.includes(d.from)&&g.includes(d.to))}));
+}
+function buildRisks(){
+ const R=[],cyc=cycles();
+ deps.forEach(d=>{
+  const k=risk(d),f=T[d.from].name,p=T[d.to].name,base={owner:d.to,keys:[d.key],dep:d.id};
+  if(d.status==='rejected') R.push({...base,id:'R-'+d.id,score:100-3*d.need,level:'r',title:`${d.key} ${d.item}: rejected`,
+   facts:[`${f} needs it from ${p} by ${sp(d.need)}`,`${p} rejected the request`,`Estimate ${d.pts} pts`],fix:depFix(d)});
+  else if(d.status==='pending'&&d.age>5) R.push({...base,id:'R-'+d.id,score:90+d.age-3*d.need,level:'r',title:`${d.key} ${d.item}: no answer for ${d.age} days`,
+   facts:[`${f} needs it from ${p} by ${sp(d.need)}`,`Pending ${d.age} days (limit is 5)`,`Estimate ${d.pts} pts`],fix:depFix(d)});
+  else if(d.status==='committed'&&d.commit>d.need) R.push({...base,id:'R-'+d.id,score:85-3*d.need,level:'r',title:`${d.key} ${d.item}: lands too late`,
+   facts:[`${f} needs it in ${sp(d.need)}`,`${p} committed ${sp(d.commit)}, ${d.commit-d.need} sprint${d.commit-d.need>1?'s':''} late`],fix:depFix(d)});
+  else if(d.status==='pending') R.push({...base,id:'R-'+d.id,score:50-3*d.need,level:'a',title:`${d.key} ${d.item}: waiting ${d.age} days`,
+   facts:[`${f} needs it from ${p} by ${sp(d.need)}`,`Pending ${d.age} of 5 days`],fix:depFix(d)});
+ });
+ TEAMS.forEach(t=>SPRINTS.forEach((s,i)=>{const u=pct(PLAN[t.id][i],CAP[t.id][i]);if(u>100)R.push({id:`R-${t.id}-${s}`,score:70+(u-100)-3*i,level:'r',owner:t.id,keys:STORIES.filter(x=>x.team===t.id&&x.sprint===i).map(x=>x.key),
+   title:`${t.name} overloaded in ${s} (${u}%)`,facts:[`Planned ${PLAN[t.id][i]} of ${CAP[t.id][i]} pts`,`${PLAN[t.id][i]-CAP[t.id][i]} pts over capacity`],fix:overloadFix(t.id,i)});}));
+ people.forEach(p=>{const tot=Object.values(p.alloc).reduce((a,b)=>a+b,0);if(tot>100){const top=Object.entries(p.alloc).sort((a,b)=>b[1]-a[1])[0];
+  R.push({id:'R-p-'+p.name,score:65,level:'r',owner:top[0],keys:[],title:`${p.name} (${p.role}) booked at ${tot}%`,facts:[Object.entries(p.alloc).filter(e=>e[1]).map(([t,v])=>`${T[t].name} ${v}%`).join(' + ')+` = ${tot}%`],
+  fix:{text:`Cut ${tot-100}% from one team. Lowest-impact option: ${T[top[0]].name} goes from ${top[1]}% to ${top[1]-(tot-100)}% of ${p.name}'s time, bringing the total to 100%.`,impact:[{who:p.name,b:tot,a:100,person:true}]}});}});
+ teamGroups().forEach((g,n)=>R.push({id:'R-cyc-'+n,score:60,level:'a',owner:g.teams[0],keys:g.deps.map(d=>d.key),title:`Circular wait: ${g.teams.map(x=>T[x].name).join(' ⇄ ')}`,
+  facts:g.deps.map(d=>`${d.key}: ${T[d.from].name} waits on ${T[d.to].name}`),fix:{text:`Run one 15 minute joint check with ${g.teams.map(x=>T[x].name).join(', ')} and agree who delivers first. The earliest needed item in the loop is ${g.deps.slice().sort((a,b)=>a.need-b.need)[0].key} (${sp(g.deps.slice().sort((a,b)=>a.need-b.need)[0].need)}).`,impact:[]}}));
+ const tight=deps.filter(d=>d.status==='committed'&&d.commit===d.need);
+ if(tight.length) R.push({id:'R-tight',score:30,level:'a',owner:null,keys:tight.map(d=>d.key),title:`${tight.length} items land in the same sprint they are needed`,
+  facts:tight.map(d=>`${d.key} ${d.item}: ${T[d.to].name} → ${T[d.from].name} in ${sp(d.need)}`),fix:{text:'No slack if any of these slip. Ask the providing teams to flag any wobble at the daily stand-up instead of at the next sync.',impact:[]}});
+ const spare=[];TEAMS.forEach(t=>SPRINTS.forEach((s,i)=>{const u=pct(PLAN[t.id][i],CAP[t.id][i]);if(u<60)spare.push(`${t.name} ${s} at ${u}%`);}));
+ if(spare.length) R.push({id:'R-spare',score:20,level:'a',owner:null,keys:[],title:`${spare.length} team-sprints under 60%: spare capacity`,facts:spare,fix:{text:'Use these as landing spots when you move work above, before pulling new scope in.',impact:[]}});
+ R.sort((a,b)=>b.score-a.score);R.forEach((r,i)=>{r.rank=i+1;r.nudge=templateNudge(r);});
+ return R;
+}
+function templateNudge(r){
+ const to=r.owner?T[r.owner].name+' team':'team leads';
+ const first=r.fix.text.split('. ')[0].replace(/\.$/,'').replace(/^Tightest option: /,'');
+ return `Hi ${to}, ahead of this week's ART sync: ${r.title}. ${r.facts[0]}. Suggestion: ${first}. Can you confirm, or propose another option, before the sync? Thanks.`;
+}
+function factPack(risks){
+ return {art:'One ART, 6 teams, PI 1, sprints S1 to S5',rules:'Red: rejected, pending >5 days, or committed after the needed-by sprint. Utilisation band 60-85%. Over 100% = overloaded.',
+  risks:risks.map(r=>({id:r.id,rank:r.rank,level:RL[r.level],title:r.title,facts:r.facts,suggested_fix:r.fix.text,owner:r.owner?T[r.owner].name:'several',tickets:r.keys})),
+  dependencies:deps.map(d=>({key:d.key,item:d.item,needs:T[d.from].name,provider:T[d.to].name,needed_by:sp(d.need),status:d.status,committed:d.commit==null?null:sp(d.commit),days_pending:d.status==='pending'?d.age:undefined,risk:RL[risk(d)]})),
+  utilisation:Object.fromEntries(TEAMS.map(t=>[t.name,Object.fromEntries(SPRINTS.map((s,i)=>[s,pct(PLAN[t.id][i],CAP[t.id][i])+'%']))])),
+  people:people.map(p=>({name:p.name,role:p.role,total:Object.values(p.alloc).reduce((a,b)=>a+b,0)+'%'})),
+  movable_stories:STORIES.map(s=>({key:s.key,team:T[s.team].name,sprint:sp(s.sprint),pts:s.pts,title:s.title}))};
+}
+// Guard: every number the AI writes must already exist in the facts.
+function unknownNumbers(text,facts){
+ const allowed=new Set((JSON.stringify(facts).match(/\d+/g)||[]));
+ return (String(text).match(/\d+/g)||[]).filter(n=>!allowed.has(n));
+}
+
+/* ---------- 2. AI layer (optional) ---------- */
+let AI={state:'checking',fn:null};   // checking | on | off | declined
+(async()=>{try{const s=window.claude&&window.claude.use?await window.claude.use('sample'):null;AI={state:s?'on':'off',fn:s};}catch(e){AI={state:'off',fn:null};}if(tab==='ask')render();})();
+function aiFail(e){if(e&&e.code==='not_granted'){AI.state='declined';}return e&&e.code==='rate_limited'?'Claude is busy, try again in a minute.':'AI was not available, so the plain-code version is shown.';}
+
+let brief=null,briefBusy=false,chat=[],chatBusy=false,chatDraft='';
+async function prepareSync(){
+ const risks=buildRisks();
+ brief={risks,headline:offlineHeadline(risks),by:'code',note:''};
+ if(AI.state!=='on'){render();return;}
+ briefBusy=true;render();
+ const facts=factPack(risks);
+ const prompt=`You help a Release Train Engineer prepare the weekly ART sync in a SAFe Agile Release Train.
+Use ONLY the facts in the JSON below. Do not invent tickets, teams, dates or numbers. Keep the ranking as given.
+Return JSON only, shaped {"headline": string, "items": [{"id": string, "why": string, "nudge": string}]}.
+- headline: 2 sentences max for the RTE: the overall picture and the one thing to fix first.
+- why: one plain sentence on why this risk matters to the ART this week.
+- nudge: a friendly, specific message (max 70 words) to the owning team, naming the ticket key and the suggested fix, ending with a clear ask. No sign-off name.
+FACTS:
+${JSON.stringify({art:facts.art,rules:facts.rules,risks:facts.risks})}`;
+ try{
+  const out=await AI.fn.json(prompt,{modelTier:'default'});
+  let swapped=0;
+  if(out&&out.headline&&!unknownNumbers(out.headline,facts).length) brief.headline=out.headline;
+  (out.items||[]).forEach(it=>{const r=risks.find(x=>x.id===it.id);if(!r)return;
+   if(it.why&&!unknownNumbers(it.why,facts).length) r.why=it.why;
+   if(it.nudge){if(unknownNumbers(it.nudge,facts).length){swapped++;}else{r.nudge=it.nudge;r.aiNudge=true;}}});
+  brief.by='ai';brief.note=swapped?`${swapped} AI draft${swapped>1?'s':''} used a number not in the data, so the plain-code draft is shown instead.`:'';
+ }catch(e){brief.note=aiFail(e);}
+ briefBusy=false;render();
+}
+function offlineHeadline(R){
+ const red=R.filter(r=>r.level==='r').length;
+ return R.length?`${red} red risk${red===1?'':'s'} and ${R.length-red} to watch across the ART. Fix first: ${R[0].title}.`:'No risks found. The ART looks healthy this week.';
+}
+async function ask(q){
+ q=(q||'').trim();if(!q||chatBusy)return;
+ chat.push({role:'user',content:q});chatDraft='';
+ const risks=buildRisks(),facts=factPack(risks);
+ if(AI.state!=='on'){chat.push({role:'assistant',content:offlineAnswer(q,risks),by:'rules'});render();scrollChat();return;}
+ chatBusy=true;chat.push({role:'assistant',content:'Thinking...',by:'ai',pending:true});render();scrollChat();
+ const rules=`You are "Ask the ART", an assistant for a SAFe Release Train Engineer. Answer ONLY from the dashboard facts below, in 1 to 5 short sentences or bullets.
+Cite ticket keys in square brackets, e.g. [PAY-204]. If the facts do not answer the question, say so and suggest what to check. Never invent numbers, people, tickets or dates. You cannot change Jira; you can only suggest.
+FACTS: ${JSON.stringify(facts)}`;
+ const turns=[{role:'user',content:rules},{role:'assistant',content:'Understood. I will answer only from these facts.'},...chat.filter(m=>!m.pending).slice(-8).map(m=>({role:m.role,content:m.content}))];
+ const msg=chat[chat.length-1];
+ try{const {text}=await AI.fn(turns,{cache:false,onText:({text})=>{msg.content=text;msg.pending=false;const el=document.getElementById('lastmsg');if(el)el.innerHTML=linkify(esc(text));}});
+  msg.content=text;msg.pending=false;const bad=unknownNumbers(text,facts);if(bad.length)msg.warn=`Check: ${[...new Set(bad)].join(', ')} ${bad.length>1?'are':'is'} not in the dashboard data.`;}
+ catch(e){msg.content=offlineAnswer(q,risks);msg.by='rules';msg.pending=false;msg.warn=aiFail(e);}
+ chatBusy=false;render();scrollChat();
+}
+/* ---------- Offline answers: rules over the same facts ---------- */
+function offlineAnswer(q,risks){
+ const s=q.toLowerCase(),team=TEAMS.find(t=>s.includes(t.name.toLowerCase())||s.includes(t.id+' '));
+ const dl=d=>`[${d.key}] ${d.item} (${T[d.from].name} ← ${T[d.to].name}, needed ${sp(d.need)}, ${RL[risk(d)]}: ${reason(d).toLowerCase()})`;
+ if(/cycle|circular|loop/.test(s)){const g=teamGroups();return g.length?g.map(x=>`Loop between ${x.teams.map(t=>T[t].name).join(', ')}: ${x.deps.map(d=>'['+d.key+']').join(' ')}`).join('\n'):'No circular waits right now.';}
+ if(team&&/wait|need|block|depend|stuck/.test(s)){const l=deps.filter(d=>d.from===team.id);return l.length?`${team.name} is waiting on ${l.length} item${l.length>1?'s':''}:\n`+l.map(d=>'• '+dl(d)).join('\n'):`${team.name} is not waiting on anyone.`;}
+ if(team&&/owe|give|deliver|provide|promis/.test(s)){const l=deps.filter(d=>d.to===team.id);return l.length?`${team.name} owes ${l.length} item${l.length>1?'s':''}:\n`+l.map(d=>'• '+dl(d)).join('\n'):`Nobody is waiting on ${team.name}.`;}
+ if(team&&/capacit|load|utili|busy|room|over/.test(s)){return `${team.name} utilisation: `+SPRINTS.map((x,i)=>{const u=pct(PLAN[team.id][i],CAP[team.id][i]);return `${x} ${u}% (${RL[band(u)]})`;}).join(', ')+'.';}
+ if(team){const l=risks.filter(r=>r.owner===team.id||r.title.includes(team.name));return l.length?`Risks involving ${team.name}:\n`+l.map(r=>`• ${r.title}${r.keys[0]?' ['+r.keys[0]+']':''}`).join('\n'):`No open risks for ${team.name}.`;}
+ if(/overload|over 100|capacit|utili/.test(s)){const l=risks.filter(r=>r.id.startsWith('R-')&&/overloaded/.test(r.title));return l.length?l.map(r=>'• '+r.title).join('\n'):'No team is over 100%.';}
+ if(/risk|worst|top|first|priorit|sync|brief/.test(s)) return 'Top 3 for the sync:\n'+risks.slice(0,3).map(r=>`${r.rank}. ${r.title}${r.keys[0]?' ['+r.keys[0]+']':''}`).join('\n');
+ const k=[...deps.map(d=>d.key),...STORIES.map(x=>x.key)].find(x=>s.includes(x.toLowerCase()));
+ if(k){const d=deps.find(x=>x.key===k);if(d)return dl(d);const st=STORIES.find(x=>x.key===k);return `[${st.key}] ${st.title}: ${st.pts} pts, ${T[st.team].name} ${sp(st.sprint)}.`;}
+ return 'In offline mode I answer questions like: "What is Search waiting on?", "What does Catalogue owe?", "Is Checkout overloaded?", "Any circular dependencies?", "Top risks for the sync".';
+}
+/* ---------- View ---------- */
+function linkify(h){const known=new Set([...deps.map(d=>d.key),...STORIES.map(s=>s.key)]);return h.replace(/\[([A-Z]{2,5}-\d+)\]/g,(m,k)=>known.has(k)?`<a href="#" class="tk" onclick="openKey('${k}');return false">${k}</a>`:m).replace(/\n/g,'<br>');}
+function openKey(k){const d=deps.find(x=>x.key===k);if(d){tab='dep';pair={from:d.from,to:d.to};}else tab='cap';render();window.scrollTo(0,0);}
+function scrollChat(){const el=document.getElementById('chatlog');if(el)el.scrollTop=el.scrollHeight;}
+function copyDraft(id){const t=document.getElementById('nd-'+id),m=document.getElementById('cm-'+id);const done=()=>{m.textContent='Copied. Paste it into Slack, Teams or a Jira comment.';};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t.value).then(done,()=>{t.select();m.textContent='Selected. Press Ctrl+C or Cmd+C to copy.';});else{t.select();m.textContent='Selected. Press Ctrl+C or Cmd+C to copy.';}}
+function modeBadge(){
+ if(AI.state==='on')return '<span class="mode on">✦ AI mode: Claude writes the words, code supplies every number</span>';
+ if(AI.state==='checking')return '<span class="mode">Checking for AI…</span>';
+ if(AI.state==='declined')return '<span class="mode">Offline mode: AI was declined, answers come from rules</span>';
+ return '<span class="mode">Offline mode: no AI connected, answers come from rules over the same data</span>';
+}
+function askView(){
+ let b='';
+ if(brief){
+  const card=r=>`<div class="rk"><div class="rkh"><span class="rank">${r.rank}</span>${chip(r.level)}<b>${linkify(esc(r.title).replace(/^([A-Z]{2,5}-\d+)/,'[$1]'))}</b></div>
+   ${r.why?`<div class="why">${esc(r.why)}</div>`:''}
+   <ul class="facts">${r.facts.slice(0,4).map(f=>`<li>${esc(f)}</li>`).join('')}${r.facts.length>4?`<li class="note">+${r.facts.length-4} more</li>`:''}</ul>
+   <div class="fix"><b>Suggested fix</b> <span class="note">(calculated, not applied)</span><div>${esc(r.fix.text)}</div>
+   ${r.fix.impact.length?`<div class="imp">${r.fix.impact.map(x=>`<span>${esc(x.who)}: <span class="chip ${x.person?(x.b>100?'r':'g'):band(x.b)}">${x.b}%</span> → <span class="chip ${x.person?(x.a>100?'r':'g'):band(x.a)}">${x.a}%</span></span>`).join('')}</div>`:''}</div>
+   <details ${r.rank<=3?'open':''}><summary>Draft nudge to ${r.owner?esc(T[r.owner].name):'team leads'} ${r.aiNudge?'<span class="src">AI draft</span>':'<span class="src">template</span>'}</summary>
+   <textarea id="nd-${r.id}" rows="4">${esc(r.nudge)}</textarea>
+   <div class="row"><button class="small" onclick="copyDraft('${r.id}')">Approve and copy</button><span class="note" id="cm-${r.id}">You review and send it yourself. Nothing is posted.</span></div></details></div>`;
+  const top=brief.risks.slice(0,6),rest=brief.risks.slice(6);
+  const cards=top.map(card).join('')+(rest.length?`<details class="more"><summary>Show ${rest.length} lower-priority risks</summary>${rest.map(card).join('')}</details>`:'');
+  b=`<div class="card"><div class="hl">${esc(brief.headline)}</div><div class="note">${brief.by==='ai'?'Briefing written by Claude from the facts below.':'Briefing built from rules.'} ${esc(brief.note)} ${brief.risks.length} risks, ranked by severity and how soon they bite. Top 6 shown first.</div></div>${cards}`;
+ }
+ const log=chat.map((m,i)=>`<div class="msg ${m.role}"><div ${i===chat.length-1?'id="lastmsg"':''}>${m.pending?'<span class="note">Thinking…</span>':linkify(esc(m.content))}</div>${m.role==='assistant'?`<div class="note">${m.by==='ai'?'Claude, from dashboard facts':'Rules, from dashboard facts'}${m.warn?' · <b>'+esc(m.warn)+'</b>':''}</div>`:''}</div>`).join('');
+ const sugg=['What is Search waiting on?','Is Checkout overloaded?','Any circular dependencies?','What does Platform owe?'];
+ return `<h2>Ask the ART: prepare this week's ART sync</h2>
+ <div class="row">${modeBadge()}</div>
+ <div class="card"><div class="row"><button class="cta" onclick="prepareSync()" ${briefBusy?'disabled':''}>${briefBusy?'Writing the briefing…':brief?'Refresh the briefing':'✦ Prepare my ART sync'}</button>
+  <span class="note">One click: ranked risks, a calculated fix for each, and a draft nudge for the owning team.</span></div></div>
+ ${b}
+ <h2>Ask a question</h2>
+ <div class="card"><div id="chatlog" class="chatlog">${log||'<div class="note">Ask about any team, ticket, dependency or sprint. Answers cite the ticket so you can click through.</div>'}</div>
+  <div class="row" style="margin-top:8px">${sugg.map(s=>`<button class="small" onclick="ask('${s}')">${s}</button>`).join('')}</div>
+  <form class="row" style="margin-top:8px" onsubmit="ask(document.getElementById('q').value);return false"><input type="text" id="q" value="${esc(chatDraft)}" oninput="chatDraft=this.value" placeholder="e.g. What is Mobile waiting on?" style="flex:1"><button ${chatBusy?'disabled':''}>Ask</button></form></div>
+ <div class="card note"><b>How it stays honest:</b> plain code works out every colour, %, cycle and fix option. Claude only explains and writes, using those facts; any number it writes that is not in the data is flagged or replaced. Nothing is written to Jira or Azure DevOps: you approve and copy each draft.</div>`;
+}
+
 function render(){
- const tabs=[['dep','Dependencies'],['cap','Capacity'],['ppl','People']];
+ const tabs=[['dep','Dependencies'],['cap','Capacity'],['ppl','People'],['ask','✦ Ask the ART']];
  document.getElementById('app').innerHTML=`
  <h1>ART Dependency Dashboard</h1>
  <div class="sub">Prototype with sample data · 6 teams in one ART · PI 1, sprints S1 to S5</div>
  <nav>${tabs.map(([k,l])=>`<button class="${tab===k?'on':''}" onclick="setTab('${k}')">${l}</button>`).join('')}</nav>
- ${tab==='dep'?depView():tab==='cap'?capView():personView()}
+ ${tab==='dep'?depView():tab==='cap'?capView():tab==='ask'?askView():personView()}
  <div class="card note"><b>Risk rules (FR-1.4):</b> Red if rejected, still pending after 5 days, or committed after the needed-by sprint. Amber if committed in the needed-by sprint, or pending for 5 days or fewer. Green if committed before the needed-by sprint. Cycles are two or more teams waiting on each other.</div>`;
 }
 render();

@@ -26,6 +26,14 @@ A short guide for presenting the prototype. Open `prototype/dashboard.html` in a
 1. Open the **People** tab. It adds one person's load across every team they work in (FR-2.5).
 2. Show that allocations over 100% across teams are blocked (edge case).
 
-## 5. Close (1 minute)
+## 5. Ask the ART, the AI assistant (3 minutes)
+
+1. Open the **Ask the ART** tab. Point at the mode badge: AI mode or Offline mode.
+2. Click **Prepare my ART sync**. Read the headline, then the top card: `PAY-204` was rejected, and the fix shows Platform S1 going from 64% to 82%.
+3. Open a draft nudge, edit one word, click **Approve and copy**. Say: nothing is sent or written to Jira by the assistant.
+4. Ask "What is Search waiting on?" and click a ticket link to jump to the dependency.
+5. Close on the guardrail: code does the maths, Claude only explains and writes, the RTE approves.
+
+## 6. Close (1 minute)
 
 - Next steps: connect real Jira and Azure DevOps data, build the Forge app inside Jira, and roll out to all six teams.
